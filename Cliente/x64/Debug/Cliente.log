@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Cliente\main.cpp(87,12): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
+  Cliente.vcxproj -> C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Cliente\x64\Debug\Cliente.exe

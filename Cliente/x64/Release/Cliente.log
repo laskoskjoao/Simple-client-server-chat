@@ -1,0 +1,7 @@
+﻿  main.cpp
+C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Cliente\main.cpp(87,12): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
+  Gerando código
+  Previous IPDB not found, fall back to full compilation.
+  All 130 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finalizada a geração de código
+  Cliente.vcxproj -> C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Cliente\x64\Release\Cliente.exe
