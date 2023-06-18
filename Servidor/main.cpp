@@ -62,11 +62,9 @@ int main() {
     std::thread tSend(chatSend, &clientSocket);
     tSend.detach();
 
-    int  contador = 0;
     while (true) {
         /*Aceita a conexão do cliente*/
         //apos uma conexao de cliente (accept é bloqueante)...
-        contador++;
         clientAddressLength = sizeof(clientAddress);
         SOCKET* newClient = new SOCKET();
         *newClient = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLength);
@@ -90,9 +88,6 @@ int main() {
         /* Receber dados do cliente */
         std::thread tRec(chatRecv, newClient);
         tRec.detach();
-
-        if (contador == 2)
-            break;
     }
 
     

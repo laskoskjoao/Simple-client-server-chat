@@ -1,4 +1,4 @@
 ﻿  main.cpp
-C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Servidor\main.cpp(88,53): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
-C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Servidor\main.cpp(142,16): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
+C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Servidor\main.cpp(86,53): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
+C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Servidor\main.cpp(136,16): warning C4267: 'argumento': conversão de 'size_t' para 'int', possível perda de dados
   Servidor.vcxproj -> C:\Users\João\Desktop\Estudo\1 MGC\PRO (JOGO 1)\programaComunicacao\Servidor\x64\Debug\Servidor.exe
