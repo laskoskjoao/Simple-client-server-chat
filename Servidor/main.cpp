@@ -2,17 +2,19 @@
 #include <winsock2.h>
 #include <string>
 #include <thread>
+#include <vector>
 
 #pragma comment(lib, "ws2_32.lib") // Link com a biblioteca do Winsock
 
 #define BUFFER_SIZE 1024
 
-void chatRecv(SOCKET clientSocket);
-void chatSend(SOCKET clientSocket);
+void chatRecv(SOCKET* clientSocket);
+void chatSend(std::vector<SOCKET*>* clientSocket);
 
 int main() {
     WSADATA wsaData;
-    SOCKET serverSocket, clientSocket;
+    SOCKET serverSocket;
+    std::vector<SOCKET*> clientSocket;
     sockaddr_in serverAddress, clientAddress;
     int clientAddressLength;
 
@@ -55,36 +57,52 @@ int main() {
 
     std::cout << "Servidor aguardando conexões..." << std::endl;
 
-    /*Aceita a conexão do cliente*/
-    //apos uma conexao de cliente (accept é bloqueante)...
-    clientAddressLength = sizeof(clientAddress);
-    clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLength);
-    //clientSocket -> apos accept, contém as informacoes de outro computador (socket remoto)
-    //primeiro parametro de accept  -> socket que está em estado de escuta
-    //segundo parametro de accept   -> ponteiro para uma estrutura addr_in, contendo as informações do computador remoto.
-    //terceiro parametro de accept  -> ponteiro do tamanho da estrutura addr_in presente no segundo parâmetro dessa função
-    if (clientSocket == INVALID_SOCKET) {
-        std::cout << "Erro ao aceitar a conexão do cliente." << std::endl;
-        closesocket(serverSocket);
-        return 1;
+
+    /* Enviar dados para os clientes conectados*/
+    std::thread tSend(chatSend, &clientSocket);
+    tSend.detach();
+
+    int  contador = 0;
+    while (true) {
+        /*Aceita a conexão do cliente*/
+        //apos uma conexao de cliente (accept é bloqueante)...
+        contador++;
+        clientAddressLength = sizeof(clientAddress);
+        SOCKET* newClient = new SOCKET();
+        *newClient = accept(serverSocket, (struct sockaddr*)&clientAddress, &clientAddressLength);
+        clientSocket.push_back(newClient);
+        //clientSocket -> apos accept, contém as informacoes de outro computador (socket remoto)
+        //primeiro parametro de accept  -> socket que está em estado de escuta
+        //segundo parametro de accept   -> ponteiro para uma estrutura addr_in, contendo as informações do computador remoto.
+        //terceiro parametro de accept  -> ponteiro do tamanho da estrutura addr_in presente no segundo parâmetro dessa função
+        if (*newClient == INVALID_SOCKET) {
+            std::cout << "Erro ao aceitar a conexão do cliente." << std::endl;
+            closesocket(serverSocket);
+            return 1;
+        }
+
+        std::cout << "Cliente conectado." << std::endl;
+
+        /*Envio de dados para o cliente*/
+        const char* message = "Conexao Estabelecida!";
+        send(*newClient, message, strlen(message), 0);
+
+        /* Receber dados do cliente */
+        std::thread tRec(chatRecv, newClient);
+        tRec.detach();
+
+        if (contador == 2)
+            break;
     }
 
-    std::cout << "Cliente conectado." << std::endl;
-
-    /* Receber dados do cliente */
-    std::thread t(chatRecv, clientSocket);
-    t.detach();
-
-    /*Envio de dados para o cliente*/
-    const char* message = "Conexao Estabelecida!";
-    send(clientSocket, message, strlen(message), 0);
-
-    /* Enviar dados para o cliente*/
-    chatSend(clientSocket);
     
-
     /*Encerramento das conexões e liberação dos recursos*/
-    closesocket(clientSocket);  //Encera o socket
+    for (int i = 0; i < clientSocket.size(); i++) {
+        closesocket(*clientSocket[i]);  //Encera o socket
+        delete(clientSocket[i]);
+    }
+    clientSocket.clear();
+
     closesocket(serverSocket);  //Encera o socket
     WSACleanup();               //Finaliza o uso do winsocks (desaloca recursos alocados pela Winsock) - Boa prática
 
@@ -92,10 +110,10 @@ int main() {
 }
 
 
-void chatRecv(SOCKET clientSocket) {
-    while (1) {
+void chatRecv(SOCKET* clientSocket) {
+    while (true) {
         char buffer[BUFFER_SIZE];
-        int bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+        int bytesRead = recv(*clientSocket, buffer, BUFFER_SIZE, 0);
 
         if (bytesRead > 0) {
             buffer[bytesRead] = '\0';
@@ -112,18 +130,20 @@ void chatRecv(SOCKET clientSocket) {
     }
 }
 
-void chatSend(SOCKET clientSocket) {
-    while (1) {
+void chatSend(std::vector<SOCKET*>* clientSocket) {
+    while (true) {
         std::string message;
         std::getline(std::cin, message);
         const char* message_char = message.c_str();
-
-        /* Enviar dados para o servidor */
-        if (send(clientSocket, message_char, strlen(message_char), 0) < 0) { //A função send(…) é utilizada para enviar os dados de um computador ao outro. Pode ser usada pelo servidor ou cliente.
-            //primeiro parametro da funcao send -> socket que contém as informações do computador remoto a que se deseja enviar os dados.
-            //segundo parametro da funcao send  -> ponteiro do tipo char (ou seja, qualquer dado que será enviado deve ser anteriormente convertido em chars) cujo conteúdo será o que será mandado ao outro computador.
-            //terceiro parametro da funcao send ->inteiro com o tamanho do buffer a ser enviado.
-            std::cout << "Erro ao enviar dados para o cliente." << std::endl;
+        
+        for (int i = 0; i < (*clientSocket).size(); i++) {
+            /* Enviar dados para o servidor */
+            if (send(*(*clientSocket)[i], message_char, strlen(message_char), 0) < 0) { //A função send(…) é utilizada para enviar os dados de um computador ao outro. Pode ser usada pelo servidor ou cliente.
+                //primeiro parametro da funcao send -> socket que contém as informações do computador remoto a que se deseja enviar os dados.
+                //segundo parametro da funcao send  -> ponteiro do tipo char (ou seja, qualquer dado que será enviado deve ser anteriormente convertido em chars) cujo conteúdo será o que será mandado ao outro computador.
+                //terceiro parametro da funcao send -> inteiro com o tamanho do buffer a ser enviado.
+                std::cout << "Erro ao enviar dados para o cliente." << std::endl;
+            }
         }
     }
 }
